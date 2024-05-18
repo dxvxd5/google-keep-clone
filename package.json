@@ -1,0 +1,17 @@
+{
+  "name": "google-keep-clone",
+  "version": "1.0.0",
+  "description": "A clone of Google Keep",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run start:dev\" \"cd client && npm start\" ",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
