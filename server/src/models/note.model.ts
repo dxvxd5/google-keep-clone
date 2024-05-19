@@ -49,6 +49,15 @@ export class Note {
     return new Note({ ...data });
   }
 
+  static async deleteNoteFromId(noteId: string) {
+    const note = await firestore.doc(geNotePath(noteId)).get();
+    if (note.exists) {
+      await note.ref.delete();
+      return true;
+    }
+    return false;
+  }
+
   static async getNoteFromId(noteId: string) {
     const dataRef = await firestore.doc(geNotePath(noteId)).get();
     const data = dataRef.data();

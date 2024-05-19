@@ -8,7 +8,12 @@ export const createNote = async (req: Request, res: Response) => {
 
 export const deleteNote = async (req: Request, res: Response) => {
   const { noteId } = req.params;
-  res.send(`deleting the note  ${noteId}`);
+  const isDeleted = await Note.deleteNoteFromId(noteId);
+  if (isDeleted) {
+    res.status(200).send(`note ${noteId} was succesfully deleted`);
+  } else {
+    res.status(400).send(`note ${noteId} does not exist.`);
+  }
 };
 
 export const updateNote = async (req: Request, res: Response) => {
