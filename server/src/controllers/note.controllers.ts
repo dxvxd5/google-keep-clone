@@ -6,6 +6,14 @@ export const createNote = async (req: Request, res: Response) => {
   console.log(req.body.content);
 };
 
+const buildJsonResponse = (data: unknown, key: string) => {
+  return {
+    data: {
+      [key]: data,
+    },
+  };
+};
+
 export const deleteNote = async (req: Request, res: Response) => {
   const { noteId } = req.params;
   const isDeleted = await Note.deleteNoteFromId(noteId);
@@ -32,7 +40,7 @@ export const getNote = async (req: Request, res: Response) => {
         error: 'The specified note does not exist',
       });
     }
-    return res.status(200).json(note);
+    return res.status(200).json(buildJsonResponse(note, 'note'));
   } catch {
     res.status(500).send('Internal server error');
   }
@@ -48,7 +56,7 @@ export const getAllNotes = async (req: Request, res: Response) => {
       });
     }
 
-    return res.status(200).json(notes);
+    return res.status(200).json(buildJsonResponse(notes, 'notes'));
   } catch {
     return res.status(500).send('Internal server error');
   }
