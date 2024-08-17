@@ -13,6 +13,12 @@ interface EditableNoteField {
   content?: string;
   lastUpdated: number;
 }
+interface CreateNoteFields {
+  author: string;
+  title: string | null | undefined;
+  content: string | null | undefined;
+  creationDate: number;
+}
 
 export class Note {
   readonly id: string;
@@ -45,12 +51,13 @@ export class Note {
 
     return true;
   };
+
   static async createNote(
-    author: string,
-    title: string,
-    content: string,
-    creationDate: number,
+    createNoteFields: CreateNoteFields,
   ): Promise<Note | null> {
+    let { author, title, content, creationDate } = createNoteFields;
+    title = title ?? '';
+    content = content ?? '';
     const newNote = await firestore.collection(NOTES_BASE_PATH).add({
       author,
       title,
@@ -86,17 +93,16 @@ export class Note {
     return false;
   }
 
-  static async updateNote(
-    noteId: string,
-    filedToEdit: EditableNoteField,
-  ): Promise<boolean> {
+  static async updateNote(noteId: string, fieldToEdit: EditableNoteField) {
     const note = await firestore.doc(geNotePath(noteId)).get();
-    if (note.exists) {
-      await note.ref.update({ ...filedToEdit });
-      return true;
-    } else {
-      return false;
+
+    if (!note.exists) {
+      return null;
     }
+
+    await note.ref.update({ ...fieldToEdit });
+    const updateNote = await Note.getNoteFromId(noteId);
+    return updateNote;
   }
 
   static async getNoteFromId(noteId: string) {
