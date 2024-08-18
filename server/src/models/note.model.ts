@@ -8,6 +8,17 @@ interface NoteData {
   creationDate: number;
   lastUpdated: number;
 }
+interface EditableNoteField {
+  title?: string;
+  content?: string;
+  lastUpdated: number;
+}
+interface CreateNoteFields {
+  author: string;
+  title: string | null | undefined;
+  content: string | null | undefined;
+  creationDate: number;
+}
 
 export class Note {
   readonly id: string;
@@ -41,6 +52,30 @@ export class Note {
     return true;
   };
 
+  static async createNote(
+    createNoteFields: CreateNoteFields,
+  ): Promise<Note | null> {
+    let { author, title, content, creationDate } = createNoteFields;
+    title = title ?? '';
+    content = content ?? '';
+    const newNote = await firestore.collection(NOTES_BASE_PATH).add({
+      author,
+      title,
+      content,
+      creationDate,
+      lastUpdated: creationDate,
+    });
+
+    return new Note({
+      author,
+      title,
+      content,
+      creationDate,
+      lastUpdated: creationDate,
+      id: newNote.id,
+    });
+  }
+
   private static createNoteFromData(data: unknown): Note | null {
     if (!Note.isNoteData(data)) {
       return null;
@@ -58,6 +93,18 @@ export class Note {
     return false;
   }
 
+  static async updateNote(noteId: string, fieldToEdit: EditableNoteField) {
+    const note = await firestore.doc(geNotePath(noteId)).get();
+
+    if (!note.exists) {
+      return null;
+    }
+
+    await note.ref.update({ ...fieldToEdit });
+    const updateNote = await Note.getNoteFromId(noteId);
+    return updateNote;
+  }
+
   static async getNoteFromId(noteId: string) {
     const dataRef = await firestore.doc(geNotePath(noteId)).get();
     const data = dataRef.data();
@@ -67,7 +114,7 @@ export class Note {
     const note = this.createNoteFromData({ ...data, id: dataRef.id });
 
     if (!note) {
-      throw new Error('Incorrect data');
+      throw new Error(`Incorrect data for noteId:${noteId}`);
     }
 
     return note;
@@ -86,7 +133,7 @@ export class Note {
       let note = Note.createNoteFromData({ ...doc.data(), id: doc.id });
 
       if (!note) {
-        throw new Error('Incorrect data');
+        throw new Error(`Incorrect data for noteId:${doc.id}`);
       }
 
       notes.push(note);
